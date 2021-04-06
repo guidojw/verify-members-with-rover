@@ -65,6 +65,8 @@ async function start () {
 
   await fs.promises.writeFile(`./${OUTPUT_FILE_NAME}`, JSON.stringify(notVerifieds, null, '\t'))
 
+  console.log(`Successfully verified ${verifieds.length} members. ${notVerifieds.length} members weren't verified because they aren't verified with RoVer`)
+
   client.destroy()
 }
 
