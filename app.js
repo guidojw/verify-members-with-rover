@@ -15,7 +15,7 @@ const OUTPUT_CHANNEL_ID = ''
 const OUTPUT_FILE_NAME = 'not-verifieds.json'
 const UPDATE_INTERVAL = 0.333 * 1000
 
-require('../extensions')
+require('./src/extensions')
 
 async function start () {
   const client = new Client()
