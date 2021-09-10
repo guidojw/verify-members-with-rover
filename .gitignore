@@ -1,5 +1,11 @@
 .env
 
-/node_modules
+node_modules
+dist
+yarn-error.log
 
-/.idea/*
+ecosystem.config.js
+.idea
+
+temp-*.json
+*-not-verifieds.json
