@@ -5,6 +5,9 @@ import type { VerificationData } from './extensions'
 import dotenv from 'dotenv'
 import fs from 'fs'
 import { userService } from './services'
+import { util } from './util'
+
+const { sleep } = util
 
 dotenv.config()
 
@@ -27,15 +30,18 @@ async function start (): Promise<void> {
     console.error('Invalid guild, stopping..')
     return
   }
+  await guild.fetch()
 
   // Validate roles.
   if (VERIFIED_ROLE_ID !== null && !guild.roles.cache.has(VERIFIED_ROLE_ID)) {
     console.error(`Invalid verified role "${VERIFIED_ROLE_ID}", stopping..`)
+    client.destroy()
     return
   }
   for (const excludeRoleId of EXCLUDE_ROLE_IDS) {
     if (!guild.roles.cache.has(excludeRoleId)) {
       console.error(`Invalid excluded role "${excludeRoleId}", stopping..`)
+      client.destroy()
       return
     }
   }
@@ -46,6 +52,7 @@ async function start (): Promise<void> {
     outputChannel = guild.channels.cache.get(OUTPUT_CHANNEL_ID)
     if (typeof outputChannel === 'undefined' || !(outputChannel instanceof TextChannel)) {
       console.error(`Invalid output channel "${OUTPUT_CHANNEL_ID}", stopping..`)
+      client.destroy()
       return
     }
   }
@@ -80,7 +87,10 @@ async function start (): Promise<void> {
     verifieds.set(member.id, verificationData)
   }
 
-  await fs.promises.writeFile('./temp-verifieds.json', JSON.stringify(verifieds.toJSON(), null, '\t'))
+  await fs.promises.writeFile(
+    './temp-verifieds.json',
+    JSON.stringify(Object.fromEntries(verifieds.entries()), null, '\t')
+  )
   await fs.promises.writeFile('./temp-not-verifieds.json', JSON.stringify(notVerifieds, null, '\t'))
 
   // If RoVer's smart name format is used, get the Roblox user data of each
@@ -148,12 +158,6 @@ async function start (): Promise<void> {
   console.log(`Successfully verified ${verifiedAmount} members. ${notVerifieds.length} members weren't verified because they aren't verified with RoVer or the RoVer API returned an error`)
 
   client.destroy()
-}
-
-async function sleep (ms: number): Promise<void> {
-  return await new Promise(resolve => {
-    setTimeout(resolve, ms)
-  })
 }
 
 function getMemberPromises (member: GuildMember, newNickname: string): Array<Promise<GuildMember>> {
